@@ -32,19 +32,6 @@
         #unlockForm {
             display: none;
         }
-        .button-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .button-link:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -65,13 +52,8 @@
             Tempo restante: <span id="timeLeft">80:00</span>
         </div>
         <h3>!! Atenção: Não trocar as abas ou sair da página. Isso FINALIZARÁ a prova !!</h3>
-        
-        <a class="button-link" href="https://makecode.microbit.org/#editor" target="_blank" onclick="return openMakeCode()">Abrir Editor MakeCode</a>
 
-        <h3>1ª Questão: Desenvolvimento de Programa no Microbit</h3>
-        <p>Desenvolva um programa no MakeCode que exiba "Olá!" no botão A e um coração no botão B por 5 segundos cada.</p>
-
-        <h3>2ª Questão: Corrija os erros do código abaixo</h3>
+        <h3>1ª Questão: Corrija os erros do código abaixo</h3>
         <pre>
 let led = microbit.display;
 input.onButtonPressed(Button.A, function() {
@@ -91,6 +73,19 @@ function heartImage() {
     return heart;
 }
         </pre>
+
+        <h3>2ª Questão: Qual é a função do sensor de luz no Microbit?</h3>
+        <p>Explique como o sensor de luz pode ser utilizado em um projeto e cite um exemplo prático.</p>
+
+        <h3>3ª Questão: Criação de um programa com sensor de temperatura</h3>
+        <p>Desenvolva um programa em que o Microbit exiba a mensagem "Calor" quando a temperatura estiver acima de 30°C.</p>
+
+        <h3>4ª Questão: Componentes do Microbit</h3>
+        <p>Liste cinco componentes físicos presentes no Microbit e descreva a função de cada um.</p>
+
+        <h3>5ª Questão: Botões e lógica condicional</h3>
+        <p>Explique como utilizar os botões A e B em conjunto para criar uma lógica condicional que exiba "OK" no display.</p>
+
         <div id="lockMessage">
             <h2>A prova foi finalizada ou você tentou acessar novamente!</h2>
         </div>
@@ -118,12 +113,14 @@ function heartImage() {
                 startTimer();
                 blockKeys();
                 provaStarted = true;
-                window.onblur = () => {
-                    if (!makecodeOpened) {
-                        localStorage.setItem('provaLock', 'true');
-                        location.reload();
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') {
+                        if (!makecodeOpened) {
+                            localStorage.setItem('provaLock', 'true');
+                            location.reload();
+                        }
                     }
-                };
+                });
             } else {
                 alert('Usuário ou senha incorretos!');
             }
