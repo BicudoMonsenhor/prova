@@ -1,3 +1,4 @@
+<!-- PROVA MICROBIT SEGURA COM BLOQUEIOS PERMITINDO APENAS ABA DO MAKECODE -->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -10,7 +11,6 @@
             margin: 0;
             padding: 0;
         }
-
         .container {
             max-width: 600px;
             margin: auto;
@@ -18,35 +18,36 @@
             background-color: #f0f0f0;
             border-radius: 10px;
         }
-
-        #loginForm {
-            display: block;
-        }
-
-        #prova {
-            display: none;
-        }
-
         .timer {
             font-size: 20px;
             color: red;
             font-weight: bold;
         }
-
         #lockMessage {
             display: none;
             font-size: 20px;
             color: red;
             text-align: center;
         }
-
         #unlockForm {
             display: none;
         }
+        .button-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .button-link:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
-<body>
-
+<body oncontextmenu="return false">
     <div class="container" id="loginForm">
         <h2>Login para acessar a prova</h2>
         <form onsubmit="return login()">
@@ -58,109 +59,89 @@
         </form>
     </div>
 
-    <div class="container" id="prova">
+    <div class="container" id="prova" style="display: none;">
         <h2>Prova - Microbit</h2>
         <div class="timer">
             Tempo restante: <span id="timeLeft">80:00</span>
         </div>
-<h3> !! Atenção não trocar as abas pois a pagina fecha e zera a prova com senha de bloqueio!!</h3>
+        <h3>!! Atenção: Não trocar as abas ou sair da página. Isso FINALIZARÁ a prova !!</h3>
+        
+        <a class="button-link" href="https://makecode.microbit.org/#editor" target="_blank" onclick="return openMakeCode()">Abrir Editor MakeCode</a>
+
         <h3>1ª Questão: Desenvolvimento de Programa no Microbit</h3>
-        <p>Desenvolva um programa utilizando o Microbit que resolva o seguinte problema: </p>
-        <p><strong>"Ao pressionar o botão A, o Microbit deverá exibir uma mensagem no display de LEDs dizendo 'Olá!' por 5 segundos. Ao pressionar o botão B, o display de LEDs deverá exibir uma imagem de um coração por 5 segundos."</strong></p>
-        <p><strong>Requisitos:</strong></p>
-        <ul>
-            <li>O programa deve ser desenvolvido no ambiente de programação MakeCode java ou bloco para Microbit.</li>
-            <li>Após o desenvolvimento do código, explique sua estratégia de programação no papel, descrevendo como utilizou as funções do Microbit.</li>
-            <li>Apos termino do programa escrever na folha de resposta o codigo do programa</li>
-        </ul>
+        <p>Desenvolva um programa no MakeCode que exiba "Olá!" no botão A e um coração no botão B por 5 segundos cada.</p>
 
-        <h3>2ª Questão: Identificação de Erros no Código Microbit</h3>
-        <p>Encontre e corrija os 5 erros do código abaixo:</p>
-        <p>Observação apos localizar deixa as resposta explicita na folha de resposta!</p>
-        <p>EX: microbit.display.show(ola)  o erro no (ola esta sem as aspas ("ola") ) </p>
+        <h3>2ª Questão: Corrija os erros do código abaixo</h3>
         <pre>
-&lt;script&gt;
-    let led = microbit.display;
-    input.onButtonPressed(Button.A, function() {
-        microbit.display.show("Olá");
-    });
-    input.onButtonPressed(Button.B, function() {
-        microbit.display.show(Heart);
-    });
-    function heartImage() {
-        let heart = image.createImage(`
-            . . . . .
-            . # # # .
-            . # # # .
-            . . . . .
-            . . . . .
-        `);
-        return heart;
-    }
-&lt;/script&gt;
-<P> Boa Prova  </P>
+let led = microbit.display;
+input.onButtonPressed(Button.A, function() {
+    microbit.display.show("Olá");
+});
+input.onButtonPressed(Button.B, function() {
+    microbit.display.show(Heart);
+});
+function heartImage() {
+    let heart = image.createImage(`
+        . . . . .
+        . # # # .
+        . # # # .
+        . . . . .
+        . . . . .
+    `);
+    return heart;
+}
         </pre>
-
         <div id="lockMessage">
             <h2>A prova foi finalizada ou você tentou acessar novamente!</h2>
-            <p>A página será bloqueada.</p>
         </div>
-
         <div id="unlockForm">
             <h2>Desbloqueio da prova (Senha do professor)</h2>
-            <label for="unlockPassword">Senha:</label>
             <input type="password" id="unlockPassword" required><br><br>
             <button onclick="unlockTest()">Liberar prova</button>
         </div>
     </div>
 
     <script>
-        let loggedIn = false;
-        let provaStarted = false;
-        let timerInterval;
-
         const correctUsername = 'bicudo';
         const correctPassword = 'Aluno@';
-        const teacherPassword = 'bicudo25'; // Senha do professor para desbloquear
+        const teacherPassword = 'bicudo25';
+        let timerInterval;
+        let provaStarted = false;
+        let makecodeOpened = false;
 
         function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (username === correctUsername && password === correctPassword) {
-                loggedIn = true;
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if (u === correctUsername && p === correctPassword) {
                 document.getElementById('loginForm').style.display = 'none';
-                startProva();
+                document.getElementById('prova').style.display = 'block';
+                startTimer();
+                blockKeys();
+                provaStarted = true;
+                window.onblur = () => {
+                    if (!makecodeOpened) {
+                        localStorage.setItem('provaLock', 'true');
+                        location.reload();
+                    }
+                };
             } else {
                 alert('Usuário ou senha incorretos!');
             }
-            return false; // Evita o reload da página
-        }
-
-        function startProva() {
-            if (loggedIn) {
-                document.getElementById('prova').style.display = 'block';
-                startTimer();
-                preventNavigation(); // Inicia a proteção contra navegação
-            }
+            return false;
         }
 
         function startTimer() {
-            let timeLeft = 80 * 60; // 130 minutos em segundos
-            const timeLeftDisplay = document.getElementById('timeLeft');
-            
-            timerInterval = setInterval(function() {
-                if (timeLeft <= 0) {
+            let time = 80 * 60;
+            const display = document.getElementById('timeLeft');
+            timerInterval = setInterval(() => {
+                if (time <= 0) {
                     clearInterval(timerInterval);
                     lockPage();
                 } else {
-                    let minutes = Math.floor(timeLeft / 60);
-                    let seconds = timeLeft % 60;
-                    if (seconds < 10) {
-                        seconds = '0' + seconds;
-                    }
-                    timeLeftDisplay.textContent = `${minutes}:${seconds}`;
-                    timeLeft--;
+                    const min = Math.floor(time / 60);
+                    const sec = (time % 60).toString().padStart(2, '0');
+                    display.textContent = `${min}:${sec}`;
+                    time--;
                 }
             }, 1000);
         }
@@ -168,49 +149,35 @@
         function lockPage() {
             document.getElementById('prova').style.display = 'none';
             document.getElementById('lockMessage').style.display = 'block';
-            provaStarted = false;
+            document.getElementById('unlockForm').style.display = 'block';
         }
 
         function unlockTest() {
-            const unlockPassword = document.getElementById('unlockPassword').value;
-            if (unlockPassword === teacherPassword) {
+            const senha = document.getElementById('unlockPassword').value;
+            if (senha === teacherPassword) {
                 localStorage.removeItem('provaLock');
-                document.getElementById('lockMessage').style.display = 'none';
-                document.getElementById('unlockForm').style.display = 'none';
-                startProva();
+                location.reload();
             } else {
                 alert('Senha incorreta!');
             }
         }
 
-        // Impede o aluno de tentar acessar novamente a prova
+        function openMakeCode() {
+            makecodeOpened = true;
+            return true;
+        }
+
+        function blockKeys() {
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'c' || e.key === 'v')) e.preventDefault();
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key))) e.preventDefault();
+            });
+        }
+
         if (localStorage.getItem('provaLock') === 'true') {
             document.getElementById('lockMessage').style.display = 'block';
             document.getElementById('unlockForm').style.display = 'block';
         }
-
-        // Bloqueia o aluno caso ele tente voltar para a página da prova
-        window.onbeforeunload = function() {
-            if (provaStarted) {
-                localStorage.setItem('provaLock', 'true');
-            }
-        }
-
-        // Impede o aluno de sair da página (ou abrir um link externo)
-        function preventNavigation() {
-            window.onbeforeunload = function(event) {
-                return "Você está tentando sair da página da prova!";
-            };
-
-            // Previne o clique em links externos
-            document.querySelectorAll('a').forEach(function(anchor) {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert("A navegação foi bloqueada. Você não pode sair da página da prova!");
-                });
-            });
-        }
     </script>
-
 </body>
 </html>
